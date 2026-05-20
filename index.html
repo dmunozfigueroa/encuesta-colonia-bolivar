@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta Colonia Bolívar — Proyectos de Compensación</title>
+<style>
+  :root {
+    --azul: #1a3a5c;
+    --azul-claro: #e8f4fb;
+    --azul-medio: #185fa5;
+    --verde: #27500a;
+    --verde-claro: #eaf3de;
+    --verde-medio: #3b6d11;
+    --rojo: #a32d2d;
+    --rojo-claro: #fcebeb;
+    --ambar: #633806;
+    --ambar-claro: #faeeda;
+    --morado: #3c3489;
+    --morado-claro: #f0f0f8;
+    --rosa: #72243e;
+    --rosa-claro: #fbeaf0;
+    --gris: #f5f5f5;
+    --gris-borde: #e0e0e0;
+    --texto: #1a1a1a;
+    --texto-sec: #555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: var(--texto); min-height: 100vh; }
+
+  .header { background: var(--azul); padding: 20px 16px; text-align: center; }
+  .header h1 { color: #fff; font-size: 18px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+  .header p { color: #a8c8e8; font-size: 13px; }
+
+  .progreso-wrap { background: var(--azul); padding: 0 16px 16px; }
+  .progreso-bar { background: rgba(255,255,255,0.2); border-radius: 99px; height: 6px; }
+  .progreso-fill { background: #5bc8f5; height: 6px; border-radius: 99px; transition: width 0.4s ease; }
+  .progreso-txt { color: #a8c8e8; font-size: 11px; margin-top: 6px; text-align: center; }
+
+  .contenido { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+  .seccion { background: #fff; border-radius: 14px; padding: 18px 16px; margin-bottom: 14px; border: 1px solid var(--gris-borde); display: none; }
+  .seccion.activa { display: block; }
+
+  .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sec-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .sec-titulo { font-size: 16px; font-weight: 600; }
+  .sec-sub { font-size: 12px; color: var(--texto-sec); margin-top: 2px; }
+
+  .campo-grupo { margin-bottom: 14px; }
+  .campo-label { font-size: 13px; font-weight: 500; color: var(--texto); margin-bottom: 6px; display: block; }
+  .campo-input { width: 100%; border: 1.5px solid var(--gris-borde); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; color: var(--texto); background: #fff; transition: border-color 0.2s; }
+  .campo-input:focus { outline: none; border-color: var(--azul-medio); }
+  textarea.campo-input { resize: none; }
+
+  .opciones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .opcion-btn { background: var(--gris); border: 1.5px solid var(--gris-borde); border-radius: 10px; padding: 10px 10px; cursor: pointer; text-align: left; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .opcion-btn:active { transform: scale(0.98); }
+  .opcion-btn.sel { border-width: 2px; }
+  .opcion-titulo { font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .opcion-sub { font-size: 11px; color: var(--texto-sec); margin-top: 3px; line-height: 1.3; }
+  .opcion-btn.sel .opcion-sub { color: inherit; opacity: 0.75; }
+
+  .prio-grid { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .prio-btn { background: var(--gris); border: 1.5px solid var(--gris-borde); border-radius: 10px; padding: 11px 14px; cursor: pointer; text-align: left; font-size: 14px; font-family: inherit; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
+  .prio-btn.sel { border-width: 2px; background: var(--azul-claro); border-color: var(--azul-medio); color: var(--azul); }
+
+  .nav-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-ant { flex: 1; padding: 13px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: #fff; font-size: 14px; font-family: inherit; cursor: pointer; color: var(--texto-sec); }
+  .btn-sig { flex: 2; padding: 13px; border: none; border-radius: 12px; background: var(--azul); color: #fff; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+  .btn-sig:active { background: #0c2a47; }
+  .btn-sig:disabled { background: #aaa; cursor: not-allowed; }
+
+  .indicador-pasos { display: flex; justify-content: center; gap: 6px; margin-bottom: 14px; }
+  .paso-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gris-borde); transition: all 0.2s; }
+  .paso-dot.activo { background: var(--azul); width: 22px; border-radius: 4px; }
+  .paso-dot.hecho { background: var(--verde-medio); }
+
+  .resultado-box { background: #fff; border-radius: 14px; padding: 24px 16px; text-align: center; border: 2px solid var(--verde-medio); display: none; }
+  .resultado-box .check { font-size: 48px; margin-bottom: 12px; }
+  .resultado-box h2 { font-size: 18px; font-weight: 700; color: var(--verde); margin-bottom: 8px; }
+  .resultado-box p { font-size: 14px; color: var(--texto-sec); line-height: 1.6; margin-bottom: 16px; }
+  .btn-wa { display: flex; align-items: center; justify-content: center; gap: 8px; background: #25D366; color: #fff; border: none; border-radius: 12px; padding: 14px 20px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; text-decoration: none; margin-bottom: 8px; }
+  .btn-wa:active { background: #1da851; }
+
+  .error-msg { color: var(--rojo); font-size: 12px; margin-top: 6px; display: none; }
+
+  .aviso-box { background: #fff8e1; border: 1px solid #f0b429; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: #633806; line-height: 1.6; }
+
+  .resumen-lista { text-align: left; background: var(--gris); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; max-height: 240px; overflow-y: auto; }
+  .resumen-item { font-size: 12px; color: var(--texto-sec); padding: 3px 0; border-bottom: 0.5px solid var(--gris-borde); line-height: 1.5; }
+  .resumen-item:last-child { border-bottom: none; }
+  .resumen-cat { font-size: 13px; font-weight: 600; color: var(--texto); margin-top: 8px; margin-bottom: 2px; }
+
+  .spinner { display: none; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>¿Qué proyectos quieres<br>para la Colonia Bolívar?</h1>
+  <p>Tu opinión define el futuro de nuestra comunidad</p>
+</div>
+
+<div class="progreso-wrap">
+  <div class="progreso-bar"><div class="progreso-fill" id="progreso" style="width:0%"></div></div>
+  <div class="progreso-txt" id="progreso-txt">Paso 1 de 7</div>
+</div>
+
+<div class="contenido">
+
+  <div class="indicador-pasos" id="dots"></div>
+
+  <!-- PASO 1: DATOS -->
+  <div class="seccion activa" id="paso-1">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--azul-claro);">👤</div>
+      <div>
+        <div class="sec-titulo">¿Quién responde?</div>
+        <div class="sec-sub">Solo para saber cuántas familias participaron</div>
+      </div>
+    </div>
+    <div class="campo-grupo">
+      <label class="campo-label">Tu nombre completo *</label>
+      <input class="campo-input" id="nombre" type="text" placeholder="Ej: María López">
+      <div class="error-msg" id="err-nombre">Por favor escribe tu nombre</div>
+    </div>
+    <div class="campo-grupo">
+      <label class="campo-label">¿Cuántas personas viven en tu casa?</label>
+      <input class="campo-input" id="familia" type="number" min="1" max="20" placeholder="Ej: 5">
+    </div>
+    <div class="campo-grupo">
+      <label class="campo-label">¿Tienes finca afectada por la línea de flujo?</label>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="prio-btn" id="finca-si" onclick="setFinca('si')">✅ Sí, mi finca es afectada</button>
+        <button class="prio-btn" id="finca-no" onclick="setFinca('no')">➡️ No, no tengo finca afectada</button>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-sig" onclick="siguiente(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: VIVIENDA -->
+  <div class="seccion" id="paso-2">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--azul-claro);">🏠</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--azul);">Vivienda digna</div>
+        <div class="sec-sub">Marca todo lo que te parece importante</div>
+      </div>
+    </div>
+    <div class="aviso-box">Ya está contemplada la construcción de <strong>72 casas nuevas</strong> — una por familia. ¿Qué más necesitas?</div>
+    <div class="opciones-grid" id="op-vivienda">
+      <button class="opcion-btn" onclick="toggleOp(this,'vivienda','Casa nueva de 65m² con baño, cocina y cuarto')">
+        <div class="opcion-titulo">Casa nueva para mi familia</div>
+        <div class="opcion-sub">65m², baño, cocina — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'vivienda','Agua potable en casa')">
+        <div class="opcion-titulo">Agua potable en casa</div>
+        <div class="opcion-sub">Red domiciliaria para todas</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'vivienda','Electricidad segura y completa')">
+        <div class="opcion-titulo">Electricidad segura</div>
+        <div class="opcion-sub">Instalación eléctrica completa</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'vivienda','Baño y pozo séptico mejorado')">
+        <div class="opcion-titulo">Baño y pozo séptico</div>
+        <div class="opcion-sub">Saneamiento adecuado</div>
+      </button>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="campo-label">Otra idea de vivienda</label>
+      <textarea class="campo-input" id="txt-vivienda" rows="2" placeholder="¿Qué otra cosa necesitas para tu casa?"></textarea>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(2)">← Atrás</button>
+      <button class="btn-sig" onclick="siguiente(2)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: TRABAJO -->
+  <div class="seccion" id="paso-3">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--verde-claro);">🌱</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--verde);">Trabajo y producción</div>
+        <div class="sec-sub">Para que la familia tenga ingresos</div>
+      </div>
+    </div>
+    <div class="opciones-grid" id="op-trabajo">
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Chakra familiar propia con frutales, medicinales y cultivos')">
+        <div class="opcion-titulo">Chakra familiar propia</div>
+        <div class="opcion-sub">Frutales, medicinales, cultivos — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Animales: pollos, gallinas, cuyes para la familia')">
+        <div class="opcion-titulo">Animales para la familia</div>
+        <div class="opcion-sub">Pollos, gallinas, cuyes — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Trabajo fijo en las operaciones del Campo Oglán')">
+        <div class="opcion-titulo">Trabajo en el Oglán</div>
+        <div class="opcion-sub">Plazas fijas — es un derecho por ley</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Ganado vacuno comunitario')">
+        <div class="opcion-titulo">Ganado comunitario</div>
+        <div class="opcion-sub">Vacas, pastizales — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Tienda o punto de venta para productos de la Colonia')">
+        <div class="opcion-titulo">Tienda para vender</div>
+        <div class="opcion-sub">Vender lo que producimos</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'trabajo','Capacitación técnica para trabajar mejor')">
+        <div class="opcion-titulo">Capacitación técnica</div>
+        <div class="opcion-sub">Cursos certificados pagados</div>
+      </button>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="campo-label">Otra idea de trabajo o producción</label>
+      <textarea class="campo-input" id="txt-trabajo" rows="2" placeholder="¿Qué otro proyecto productivo necesitas?"></textarea>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(3)">← Atrás</button>
+      <button class="btn-sig" onclick="siguiente(3)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: SALUD -->
+  <div class="seccion" id="paso-4">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--rosa-claro);">❤️</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--rosa);">Salud y ambiente</div>
+        <div class="sec-sub">Para proteger a las familias y el territorio</div>
+      </div>
+    </div>
+    <div class="opciones-grid" id="op-salud">
+      <button class="opcion-btn" onclick="toggleOp(this,'salud','Subcentro de salud con médico permanente')">
+        <div class="opcion-titulo">Subcentro de salud</div>
+        <div class="opcion-sub">Con médico permanente — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'salud','Medicamentos básicos siempre disponibles')">
+        <div class="opcion-titulo">Medicamentos básicos</div>
+        <div class="opcion-sub">Botiquín comunitario abastecido</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'salud','Vigilancia del agua y ríos contra contaminación petrolera')">
+        <div class="opcion-titulo">Vigilancia del agua</div>
+        <div class="opcion-sub">Control contra contaminación</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'salud','Fondo de emergencia para derrames y accidentes')">
+        <div class="opcion-titulo">Fondo para emergencias</div>
+        <div class="opcion-sub">Si hay derrame, tenemos respuesta</div>
+      </button>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="campo-label">Otra idea de salud o ambiente</label>
+      <textarea class="campo-input" id="txt-salud" rows="2" placeholder="¿Qué otra cosa necesitas para la salud de tu familia?"></textarea>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(4)">← Atrás</button>
+      <button class="btn-sig" onclick="siguiente(4)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 5: EDUCACIÓN -->
+  <div class="seccion" id="paso-5">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--ambar-claro);">📚</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--ambar);">Educación y futuro</div>
+        <div class="sec-sub">Para que los hijos tengan más oportunidades</div>
+      </div>
+    </div>
+    <div class="opciones-grid" id="op-educacion">
+      <button class="opcion-btn" onclick="toggleOp(this,'educacion','Becas para que los hijos estudien colegio y universidad')">
+        <div class="opcion-titulo">Becas para los hijos</div>
+        <div class="opcion-sub">Colegio y universidad — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'educacion','Aulas y materiales nuevos para la escuela')">
+        <div class="opcion-titulo">Aulas y materiales</div>
+        <div class="opcion-sub">Escuela mejor equipada</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'educacion','Internet y computadoras para los jóvenes')">
+        <div class="opcion-titulo">Internet y computadoras</div>
+        <div class="opcion-sub">Para estudiar desde la Colonia</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'educacion','Cursos de oficios para adultos: soldadura, mecánica, costura')">
+        <div class="opcion-titulo">Cursos de oficios</div>
+        <div class="opcion-sub">Para adultos que quieren trabajar mejor</div>
+      </button>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="campo-label">Otra idea de educación</label>
+      <textarea class="campo-input" id="txt-educacion" rows="2" placeholder="¿Qué otra cosa necesitas para la educación?"></textarea>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(5)">← Atrás</button>
+      <button class="btn-sig" onclick="siguiente(5)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 6: INFRAESTRUCTURA + PRIORIDAD + IDEAS LIBRES -->
+  <div class="seccion" id="paso-6">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--morado-claro);">🛣️</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--morado);">Infraestructura y prioridad</div>
+        <div class="sec-sub">Lo que necesita la comunidad en general</div>
+      </div>
+    </div>
+    <div class="opciones-grid" id="op-infra">
+      <button class="opcion-btn" onclick="toggleOp(this,'infra','Vías lastradas dentro de la Colonia')">
+        <div class="opcion-titulo">Vías mejoradas</div>
+        <div class="opcion-sub">Caminos sin barro — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'infra','Casa comunal grande para reuniones')">
+        <div class="opcion-titulo">Casa comunal</div>
+        <div class="opcion-sub">Para reuniones y eventos — ya contemplado</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'infra','Cancha deportiva cubierta')">
+        <div class="opcion-titulo">Cancha deportiva</div>
+        <div class="opcion-sub">Para los jóvenes y familias</div>
+      </button>
+      <button class="opcion-btn" onclick="toggleOp(this,'infra','Luz pública en todas las calles')">
+        <div class="opcion-titulo">Luz pública</div>
+        <div class="opcion-sub">Seguridad por las noches</div>
+      </button>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="campo-label">Otra idea de infraestructura</label>
+      <textarea class="campo-input" id="txt-infra" rows="2" placeholder="¿Qué otra obra necesita la Colonia?"></textarea>
+    </div>
+
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--gris-borde);">
+      <label class="campo-label">⭐ ¿Cuál es tu prioridad más importante de todo?</label>
+      <div class="prio-grid" id="prio-grid">
+        <button class="prio-btn" onclick="setPrio(this,'🏠 Vivienda digna para mi familia')">🏠 Vivienda digna para mi familia</button>
+        <button class="prio-btn" onclick="setPrio(this,'🌱 Trabajo y producción propia')">🌱 Trabajo y producción propia</button>
+        <button class="prio-btn" onclick="setPrio(this,'❤️ Salud y cuidado del territorio')">❤️ Salud y cuidado del territorio</button>
+        <button class="prio-btn" onclick="setPrio(this,'📚 Educación para los hijos')">📚 Educación para los hijos</button>
+        <button class="prio-btn" onclick="setPrio(this,'🛣️ Infraestructura comunitaria')">🛣️ Infraestructura comunitaria</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--gris-borde);">
+      <label class="campo-label">💡 ¿Tienes alguna idea que no está en la lista?</label>
+      <textarea class="campo-input" id="txt-libre" rows="3" placeholder="Escribe aquí cualquier proyecto o idea que creas importante para la Colonia Bolívar..."></textarea>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(6)">← Atrás</button>
+      <button class="btn-sig" onclick="siguiente(6)">Ver resumen →</button>
+    </div>
+  </div>
+
+  <!-- PASO 7: RESUMEN Y ENVÍO -->
+  <div class="seccion" id="paso-7">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--verde-claro);">✅</div>
+      <div>
+        <div class="sec-titulo" style="color:var(--verde);">Confirma y envía</div>
+        <div class="sec-sub">Revisa tu respuesta antes de enviar</div>
+      </div>
+    </div>
+    <div class="resumen-lista" id="resumen-lista"></div>
+    <button class="btn-sig" id="btn-enviar" onclick="enviarRespuesta()" style="width:100%; margin-bottom:8px;">
+      <span id="btn-txt">Enviar mi respuesta</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <div class="error-msg" id="err-envio" style="text-align:center;">Hubo un error. Intenta de nuevo.</div>
+    <div class="nav-btns">
+      <button class="btn-ant" onclick="anterior(7)">← Corregir algo</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO FINAL -->
+  <div class="resultado-box" id="resultado-final">
+    <div class="check">🎉</div>
+    <h2>¡Gracias por participar!</h2>
+    <p>Tu respuesta fue recibida. Cristina y la directiva de la Colonia Bolívar la tendrán en cuenta para la negociación con Pluspetrol.</p>
+    <p style="font-size:13px; color:#a32d2d; font-weight:500; margin-bottom:16px;">¿Quieres avisar por WhatsApp que ya respondiste?</p>
+    <a id="btn-wa" class="btn-wa" href="#" target="_blank">
+      📱 Avisar a Cristina por WhatsApp
+    </a>
+    <p style="font-size:11px; color:var(--texto-sec); margin-top:8px;">Comparte este link con otras familias de la Colonia</p>
+    <button onclick="compartir()" style="margin-top:6px; background:var(--azul-claro); border:1px solid var(--azul-medio); color:var(--azul); border-radius:10px; padding:10px 16px; font-size:13px; cursor:pointer; width:100%;">
+      🔗 Compartir encuesta
+    </button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwG474wPBql6QkmOs-I9hsWpC18OVWE_cuWAAnOXj9KdVlkFwnEAMx-Hwehsjju11Tu/exec';
+const WA_NUMERO = '593958807572';
+const URL_ENCUESTA = window.location.href;
+
+const TOTAL_PASOS = 7;
+let pasoActual = 1;
+const selecciones = {};
+let prioridadSel = '';
+let fincaSel = '';
+
+function buildDots() {
+  const c = document.getElementById('dots');
+  c.innerHTML = '';
+  for (let i = 1; i <= TOTAL_PASOS; i++) {
+    const d = document.createElement('div');
+    d.className = 'paso-dot' + (i === pasoActual ? ' activo' : i < pasoActual ? ' hecho' : '');
+    c.appendChild(d);
+  }
+}
+
+function updateProgreso() {
+  const pct = Math.round(((pasoActual - 1) / (TOTAL_PASOS - 1)) * 100);
+  document.getElementById('progreso').style.width = pct + '%';
+  document.getElementById('progreso-txt').textContent = 'Paso ' + pasoActual + ' de ' + TOTAL_PASOS;
+  buildDots();
+}
+
+function mostrar(n) {
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+  const el = document.getElementById('paso-' + n);
+  if (el) { el.classList.add('activa'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  pasoActual = n;
+  updateProgreso();
+}
+
+function siguiente(desde) {
+  if (desde === 1) {
+    const nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) {
+      document.getElementById('err-nombre').style.display = 'block';
+      return;
+    }
+    document.getElementById('err-nombre').style.display = 'none';
+  }
+  if (desde === 6) { buildResumen(); mostrar(7); return; }
+  mostrar(desde + 1);
+}
+
+function anterior(desde) { mostrar(desde - 1); }
+
+function setFinca(val) {
+  fincaSel = val;
+  document.getElementById('finca-si').classList.toggle('sel', val === 'si');
+  document.getElementById('finca-no').classList.toggle('sel', val === 'no');
+  if (val === 'si') {
+    document.getElementById('finca-si').style.background = '#eaf3de';
+    document.getElementById('finca-si').style.borderColor = '#3b6d11';
+    document.getElementById('finca-no').style.background = '';
+    document.getElementById('finca-no').style.borderColor = '';
+  } else {
+    document.getElementById('finca-no').style.background = '#e8f4fb';
+    document.getElementById('finca-no').style.borderColor = '#185fa5';
+    document.getElementById('finca-si').style.background = '';
+    document.getElementById('finca-si').style.borderColor = '';
+  }
+}
+
+const COLORES = {
+  vivienda: ['#0c447c','#e8f4fb'],
+  trabajo:  ['#27500a','#eaf3de'],
+  salud:    ['#72243e','#fbeaf0'],
+  educacion:['#633806','#faeeda'],
+  infra:    ['#3c3489','#f0f0f8']
+};
+
+function toggleOp(btn, cat, val) {
+  if (!selecciones[cat]) selecciones[cat] = new Set();
+  if (selecciones[cat].has(val)) {
+    selecciones[cat].delete(val);
+    btn.classList.remove('sel');
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.querySelector('.opcion-titulo').style.color = '';
+  } else {
+    selecciones[cat].add(val);
+    btn.classList.add('sel');
+    const [dark, light] = COLORES[cat] || ['#333','#eee'];
+    btn.style.background = light;
+    btn.style.borderColor = dark;
+    btn.querySelector('.opcion-titulo').style.color = dark;
+  }
+}
+
+function setPrio(btn, val) {
+  prioridadSel = val;
+  document.querySelectorAll('#prio-grid .prio-btn').forEach(b => {
+    b.classList.remove('sel');
+    b.style.background = '';
+    b.style.borderColor = '';
+    b.style.color = '';
+  });
+  btn.classList.add('sel');
+}
+
+function buildResumen() {
+  const lista = document.getElementById('resumen-lista');
+  lista.innerHTML = '';
+  const cats = [
+    { id:'vivienda', label:'🏠 Vivienda', txt:'txt-vivienda' },
+    { id:'trabajo',  label:'🌱 Trabajo',  txt:'txt-trabajo'  },
+    { id:'salud',    label:'❤️ Salud',    txt:'txt-salud'    },
+    { id:'educacion',label:'📚 Educación',txt:'txt-educacion'},
+    { id:'infra',    label:'🛣️ Infraestructura', txt:'txt-infra' }
+  ];
+  const nombre = document.getElementById('nombre').value.trim();
+  const familia = document.getElementById('familia').value;
+  addR(lista, '👤 ' + nombre + (familia ? ' · ' + familia + ' personas en casa' : ''));
+  if (fincaSel) addR(lista, '🏡 Finca afectada: ' + (fincaSel === 'si' ? 'Sí' : 'No'));
+  cats.forEach(c => {
+    const sels = selecciones[c.id] ? Array.from(selecciones[c.id]) : [];
+    const txt = document.getElementById(c.txt).value.trim();
+    if (sels.length > 0 || txt) {
+      const h = document.createElement('div');
+      h.className = 'resumen-cat';
+      h.textContent = c.label;
+      lista.appendChild(h);
+      sels.forEach(s => addR(lista, '✅ ' + s));
+      if (txt) addR(lista, '💡 ' + txt);
+    }
+  });
+  if (prioridadSel) addR(lista, '⭐ Prioridad: ' + prioridadSel);
+  const libre = document.getElementById('txt-libre').value.trim();
+  if (libre) { addR(lista, ''); addR(lista, '💬 Ideas propias: ' + libre); }
+}
+
+function addR(parent, txt) {
+  const d = document.createElement('div');
+  d.className = 'resumen-item';
+  d.textContent = txt;
+  parent.appendChild(d);
+}
+
+function getData() {
+  const cats = ['vivienda','trabajo','salud','educacion','infra'];
+  const data = {
+    nombre: document.getElementById('nombre').value.trim(),
+    familia: document.getElementById('familia').value,
+    finca: fincaSel,
+    prioridad: prioridadSel,
+    ideas_libres: document.getElementById('txt-libre').value.trim(),
+    fecha: new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })
+  };
+  cats.forEach(c => {
+    data['sel_' + c] = selecciones[c] ? Array.from(selecciones[c]).join(' | ') : '';
+    data['txt_' + c] = document.getElementById('txt-' + c).value.trim();
+  });
+  return data;
+}
+
+async function enviarRespuesta() {
+  const btn = document.getElementById('btn-enviar');
+  const txt = document.getElementById('btn-txt');
+  const sp = document.getElementById('spinner');
+  btn.disabled = true;
+  txt.style.display = 'none';
+  sp.style.display = 'block';
+
+  const data = getData();
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    mostrarResultado(data);
+  } catch (e) {
+    btn.disabled = false;
+    txt.style.display = 'block';
+    sp.style.display = 'none';
+    document.getElementById('err-envio').style.display = 'block';
+  }
+}
+
+function mostrarResultado(data) {
+  document.getElementById('paso-7').style.display = 'none';
+  document.getElementById('dots').style.display = 'none';
+  document.getElementById('resultado-final').style.display = 'block';
+
+  const msg = encodeURIComponent(
+    '✅ Ya respondí la encuesta de la Colonia Bolívar\n' +
+    '👤 ' + data.nombre + '\n' +
+    '⭐ Mi prioridad: ' + (data.prioridad || 'no indicada') + '\n\n' +
+    '📋 Mis proyectos preferidos:\n' +
+    ['vivienda','trabajo','salud','educacion','infra'].map(c =>
+      data['sel_' + c] ? '• ' + data['sel_' + c].replace(/ \| /g, ', ') : ''
+    ).filter(Boolean).join('\n') +
+    (data.ideas_libres ? '\n\n💡 Mi idea propia: ' + data.ideas_libres : '')
+  );
+  document.getElementById('btn-wa').href = 'https://wa.me/' + WA_NUMERO + '?text=' + msg;
+  document.getElementById('resultado-final').scrollIntoView({ behavior: 'smooth' });
+}
+
+function compartir() {
+  if (navigator.share) {
+    navigator.share({ title: 'Encuesta Colonia Bolívar', text: 'Responde la encuesta de proyectos de la Colonia Bolívar', url: URL_ENCUESTA });
+  } else {
+    navigator.clipboard.writeText(URL_ENCUESTA).then(() => alert('Link copiado: ' + URL_ENCUESTA));
+  }
+}
+
+buildDots();
+updateProgreso();
+</script>
+</body>
+</html>
